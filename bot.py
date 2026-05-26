@@ -8,10 +8,18 @@ NEWS_API_KEY = os.environ.get("NEWS_API_KEY")
 
 def get_indian_trending_topics():
     topics = []
-    categories = ["technology", "business", "science", "general", "entertainment", "health"]
     
-    for category in categories:
-        url = f"https://newsapi.org/v2/top-headlines?category={category}&country=in&language=en&pageSize=3&apiKey={NEWS_API_KEY}"
+    searches = [
+        "India AI technology",
+        "India economy stock market",
+        "India politics government",
+        "India viral social media",
+        "India entertainment Bollywood",
+        "India cricket sports"
+    ]
+    
+    for query in searches:
+        url = f"https://newsapi.org/v2/everything?q={query}&language=en&sortBy=popularity&pageSize=2&apiKey={NEWS_API_KEY}"
         response = requests.get(url)
         data = response.json()
         
@@ -20,7 +28,7 @@ def get_indian_trending_topics():
                 if article.get("title") and article.get("url"):
                     topics.append({
                         "title": article["title"],
-                        "category": category.upper(),
+                        "category": query.split()[1].upper(),
                         "url": article["url"],
                         "source": article.get("source", {}).get("name", "Unknown")
                     })
@@ -43,10 +51,13 @@ def main():
     message = f"🇮🇳🔥 <b>TRENDING IN INDIA - {today}</b>\n\n"
     message += "Top content ideas for your Indian audience today:\n\n"
     
-    for i, topic in enumerate(topics[:12], 1):
-        message += f"{i}. [{topic['category']}] {topic['title']}\n"
-        message += f"   📰 {topic['source']}\n"
-        message += f"   🔗 {topic['url']}\n\n"
+    if topics:
+        for i, topic in enumerate(topics[:12], 1):
+            message += f"{i}. [{topic['category']}] {topic['title']}\n"
+            message += f"   📰 {topic['source']}\n"
+            message += f"   🔗 {topic['url']}\n\n"
+    else:
+        message += "No topics found today. Try again later.\n"
     
     message += "\n💡 Pick your best topic and create your content today!\n"
     message += "🎯 Focus on what's trending for maximum viral potential!"
