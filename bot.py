@@ -6,22 +6,24 @@ TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 NEWS_API_KEY = os.environ.get("NEWS_API_KEY")
 
-def get_trending_topics():
+def get_indian_trending_topics():
     topics = []
-    categories = ["technology", "business", "science", "general"]
+    categories = ["technology", "business", "science", "general", "entertainment", "health"]
     
     for category in categories:
-        url = f"https://newsapi.org/v2/top-headlines?category={category}&language=en&pageSize=3&apiKey={NEWS_API_KEY}"
+        url = f"https://newsapi.org/v2/top-headlines?category={category}&country=in&language=en&pageSize=3&apiKey={NEWS_API_KEY}"
         response = requests.get(url)
         data = response.json()
         
         if data.get("articles"):
             for article in data["articles"]:
-                topics.append({
-                    "title": article["title"],
-                    "category": category.upper(),
-                    "url": article["url"]
-                })
+                if article.get("title") and article.get("url"):
+                    topics.append({
+                        "title": article["title"],
+                        "category": category.upper(),
+                        "url": article["url"],
+                        "source": article.get("source", {}).get("name", "Unknown")
+                    })
     
     return topics
 
@@ -36,16 +38,18 @@ def send_telegram_message(message):
 
 def main():
     today = datetime.now().strftime("%d %B %Y")
-    topics = get_trending_topics()
+    topics = get_indian_trending_topics()
     
-    message = f"🔥 <b>TRENDING TOPICS - {today}</b>\n\n"
-    message += "Here are today's top topics to create content about:\n\n"
+    message = f"🇮🇳🔥 <b>TRENDING IN INDIA - {today}</b>\n\n"
+    message += "Top content ideas for your Indian audience today:\n\n"
     
-    for i, topic in enumerate(topics[:10], 1):
+    for i, topic in enumerate(topics[:12], 1):
         message += f"{i}. [{topic['category']}] {topic['title']}\n"
+        message += f"   📰 {topic['source']}\n"
         message += f"   🔗 {topic['url']}\n\n"
     
-    message += "\n🎯 Pick your best topic and create your content today!"
+    message += "\n💡 Pick your best topic and create your content today!\n"
+    message += "🎯 Focus on what's trending for maximum viral potential!"
     
     send_telegram_message(message)
     print("Message sent successfully!")
